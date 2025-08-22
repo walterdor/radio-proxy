@@ -1,27 +1,21 @@
 const express = require("express");
-const { createProxyMiddleware } = require("http-proxy-middleware");
+const request = require("request");
 
 const app = express();
 const PORT = process.env.PORT || 10000;
 
-app.get("/", (req, res) => {
-  res.send("🚀 Proxy funcionando: prueba en /radio");
+// Ruta para proxy de radio
+app.get("/radio", (req, res) => {
+  const streamUrl = "http://212.84.160.3:4914/stream";
+  req.pipe(request(streamUrl)).pipe(res);
 });
 
-app.use(
-  "/radio",
-  createProxyMiddleware({
-    target: "http://212.84.160.3:4914",  // IP y puerto de Listen2MyRadio
-    changeOrigin: true,
-    ws: true,
-    pathRewrite: {
-      "^/radio": "/stream", // asegúrate que el mount sea exactamente 'stream'
-    },
-    logLevel: "debug", // 🔎 para ver qué pasa en los logs de Render
-  })
-);
+// Página simple para comprobar
+app.get("/", (req, res) => {
+  res.send("🎶 Radio proxy funcionando 🎶");
+});
 
 app.listen(PORT, () => {
-  console.log(`✅ Proxy escuchando en puerto ${PORT}`);
+  console.log(`Servidor proxy en puerto ${PORT}`);
 });
 
