@@ -1,20 +1,27 @@
 const express = require("express");
-const request = require("request");
+const { createProxyMiddleware } = require("http-proxy-middleware");
 
 const app = express();
-const PORT = process.env.PORT || 3000;
-
-// URL de tu stream Icecast
-const STREAM_URL = "http://212.84.160.3:4914/stream";
-
-app.get("/stream", (req, res) => {
-  req.pipe(request(STREAM_URL)).pipe(res);
-});
+const PORT = process.env.PORT || 10000;
 
 app.get("/", (req, res) => {
-  res.send("🎶 Radio proxy funcionando 🎶");
+  res.send("🚀 Proxy funcionando: prueba en /radio");
 });
 
+app.use(
+  "/radio",
+  createProxyMiddleware({
+    target: "http://212.84.160.3:4914",  // IP y puerto de Listen2MyRadio
+    changeOrigin: true,
+    ws: true,
+    pathRewrite: {
+      "^/radio": "/stream", // asegúrate que el mount sea exactamente 'stream'
+    },
+    logLevel: "debug", // 🔎 para ver qué pasa en los logs de Render
+  })
+);
+
 app.listen(PORT, () => {
-  console.log(`Servidor proxy escuchando en puerto ${PORT}`);
+  console.log(`✅ Proxy escuchando en puerto ${PORT}`);
 });
+
